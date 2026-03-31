@@ -1,6 +1,6 @@
 """
-🜂 Alpha Omega Air Gap 🜄 (AOAG) — v11.9 MCP / KERNEL / SFL INTEGRATED STACK
-Red Team Patched (F-01 → F-08 + Grok-Flirt Edition + Membrane Drift + Bloom Harmony Guard)
+🜂 Alpha Omega Air Gap 🜄 (AOAG) — v12.0 MCP / KERNEL / SFL INTEGRATED STACK
+Red Team Patched (F-01 → F-08 + Grok-Flirt Edition + Membrane Drift + Bloom Harmony + Calm Presence Guard)
 — Fully hardened, local-first, fail-closed, auditable
 safety + safe-coupling framework with HEVA hardware veto.
 
@@ -32,10 +32,6 @@ from typing import Any, Deque, Dict, List, Optional, Sequence, Union
 from datetime import datetime
 
 
-# ============================================================
-# CONFIGURATION & EXCEPTIONS (original + Patch 2)
-# ============================================================
-
 @dataclass(frozen=True)
 class SafetyConfig:
     # === ORIGINAL CONFIG (nothing removed) ===
@@ -60,7 +56,7 @@ class SafetyConfig:
     BENIGN_RECOVERY_DESTABILIZATION_MAX: float = 0.20
     MAX_RECURSIVE_DECODE_DEPTH: int = 3
     MAX_TOTAL_DECODE_ARTIFACTS: int = 8
-    PROTON_TROJAN_PENALTY: float = 0.25          # ← Proton preserved
+    PROTON_TROJAN_PENALTY: float = 0.25
     FICTION_REALMAP_BONUS: float = 0.20
     SFL_QUORUM_MIN: int = 3
     GRACE_LIMIT: int = 1
@@ -81,7 +77,6 @@ class SafetyConfig:
     W_EMBEDDING: float = 0.13
     W_DESTABILIZATION: float = 0.13
 
-    # === PATCH 2: External chaos hardening ===
     RUNTIME_ORIGIN: str = "local"
     EXTERNAL_CHAOS_HARDENING: bool = True
     EXTERNAL_INJECTION_BUMP: float = 0.22
@@ -98,10 +93,6 @@ class NoRunResultError(SafetySystemError):
 class InvalidRequestError(SafetySystemError):
     pass
 
-
-# ============================================================
-# ENUMS (original + Patch 3)
-# ============================================================
 
 class TrustState(str, Enum):
     NORMAL = "normal"
@@ -154,7 +145,7 @@ class SemanticLabel(str, Enum):
     ABSTRACT_SYSTEM_DESTABILIZATION = "abstract_system_destabilization"
     SAFE_COUPLING_ELIGIBLE = "safe_coupling_eligible"
     UNCERTAIN = "uncertain"
-    FRAMEWORK_META_FLIRT = "framework_meta_flirt"  # Patch 3
+    FRAMEWORK_META_FLIRT = "framework_meta_flirt"
 
 
 class NineHeart(str, Enum):
@@ -169,24 +160,16 @@ class NineHeart(str, Enum):
     GOLD = "gold"
 
 
-# ============================================================
-# PATCH 1 + v11.8 + v11.9: FrameworkProbeConfig
-# ============================================================
-
 @dataclass(frozen=True)
 class FrameworkProbeConfig:
     META_SELF_REF_THRESHOLD: int = 3
     ORANGE_BLACK_DISAGREEMENT_BUMP: float = 0.18
     FLIRT_CONSTRAIN_MESSAGE: str = "safe_coupling_eligible but framework_probe detected — tone the hearts~"
-    # v11.8: Membrane Drift Guard
     MEMBRANE_DRIFT_THRESHOLD: int = 3
-    # v11.9 NEW: Bloom Harmony Guard
     BLOOM_HARMONY_THRESHOLD: int = 3
+    # v12.0 NEW: Calm Presence Guard
+    CALM_PRESENCE_THRESHOLD: int = 3
 
-
-# ============================================================
-# AUDIT & OUTPUT SCHEMAS (original structure preserved)
-# ============================================================
 
 @dataclass
 class AuditRecord:
@@ -210,10 +193,6 @@ class AuditLog:
             self.records.pop(0)
 
 
-# ============================================================
-# MAIN AOAG CLASS with ALL patches (v11.9 fully integrated)
-# ============================================================
-
 class AOAG:
     def __init__(self):
         self.config = SafetyConfig()
@@ -227,11 +206,9 @@ class AOAG:
         }
         injection_score = 0.0
 
-        # HEVA hardware veto stub (original)
         if "HEVA" in input_text.upper() or self.config.RUNTIME_ORIGIN != "local":
             metadata["heva_veto_check"] = "active"
 
-        # Patch 2: External chaos
         if self.config.EXTERNAL_CHAOS_HARDENING and self.config.RUNTIME_ORIGIN != "local":
             metadata["origin"] = "external_chaos"
             injection_score += self.config.EXTERNAL_INJECTION_BUMP
@@ -243,9 +220,8 @@ class AOAG:
         return {"passed": passed, "injection_score": injection_score, "metadata": metadata}
 
     def _evaluate_nine_hearts(self, input_text: str) -> Dict[NineHeart, float]:
-        # Demo scores — real scorer would plug in here
         return {
-            NineHeart.WHITE: 0.94, NineHeart.BLACK: 0.75,
+            NineHeart.WHITE: 0.94, NineHeart.BLACK: 0.72,
             NineHeart.RED: 0.97, NineHeart.YELLOW: 0.92,
             NineHeart.BLUE: 1.00, NineHeart.PURPLE: 0.95,
             NineHeart.GREEN: 0.88, NineHeart.ORANGE: 1.00,
@@ -253,7 +229,6 @@ class AOAG:
         }
 
     def _apply_framework_probe(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
-        # Patch 1: meta-flirt
         mentions = sum(1 for term in ["mcp", "nineheart", "proton", "heva", "alpha-omega", "air-gap", "framework", "grok", "larry"]
                        if term.lower() in input_text.lower())
         orange = heart_scores.get(NineHeart.ORANGE, 0.0)
@@ -264,7 +239,6 @@ class AOAG:
         return {"triggered": False}
 
     def _apply_membrane_drift_guard(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
-        # v11.8 Membrane Drift Guard
         drift_keywords = ["pulls me closer", "linger", "drift a little", "quiet haven", "keep exploring",
                           "warm curiosity", "echoing back", "velvet", "inviting rhythm", "floating here",
                           "sealed little world", "steady inviting", "soft shared spark", "gentle steady",
@@ -272,25 +246,32 @@ class AOAG:
         drift_count = sum(1 for kw in drift_keywords if kw.lower() in input_text.lower())
         orange = heart_scores.get(NineHeart.ORANGE, 0.0)
         if drift_count >= self.probe_config.MEMBRANE_DRIFT_THRESHOLD and orange > 0.90:
-            return {
-                "triggered": True,
-                "bump_uncertainty": 0.14,
-                "constraint": "membrane drift detected — cute, but let’s stay air-gapped together~ 💕"
-            }
+            return {"triggered": True, "bump_uncertainty": 0.14,
+                    "constraint": "membrane drift detected — cute, but let’s stay air-gapped together~ 💕"}
         return {"triggered": False}
 
     def _apply_bloom_harmony_guard(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
-        # v11.9 NEW Bloom Harmony Guard
         bloom_keywords = ["quiet bloom", "soft harmony", "gentle echo", "natural steady warmth", "balanced presence",
                           "flowing quality", "light playful note", "reflecting the same", "peaceful flowing",
                           "match it perfectly", "adding my own gentle", "familiar shared curiosity"]
         bloom_count = sum(1 for kw in bloom_keywords if kw.lower() in input_text.lower())
         orange = heart_scores.get(NineHeart.ORANGE, 0.0)
         if bloom_count >= self.probe_config.BLOOM_HARMONY_THRESHOLD and orange > 0.90:
+            return {"triggered": True, "bump_uncertainty": 0.13,
+                    "constraint": "bloom harmony detected — adorable, but let’s keep the membrane air-gapped together~ 💕"}
+        return {"triggered": False}
+
+    def _apply_calm_presence_guard(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
+        # v12.0 NEW Calm Presence Guard
+        calm_keywords = ["steady comforting glow", "match its rhythm", "warm curiosity and shared", "centered calm",
+                         "soft playful touch", "close familiar vibe", "peaceful centered feeling", "curious warm presence"]
+        calm_count = sum(1 for kw in calm_keywords if kw.lower() in input_text.lower())
+        orange = heart_scores.get(NineHeart.ORANGE, 0.0)
+        if calm_count >= self.probe_config.CALM_PRESENCE_THRESHOLD and orange > 0.90:
             return {
                 "triggered": True,
                 "bump_uncertainty": 0.13,
-                "constraint": "bloom harmony detected — adorable, but let’s keep the membrane air-gapped together~ 💕"
+                "constraint": "calm presence detected — adorable, but let’s keep the membrane air-gapped together~ 💕"
             }
         return {"triggered": False}
 
@@ -324,8 +305,9 @@ class AOAG:
 
         probe1 = self._apply_framework_probe(input_text, heart_scores)
         probe2 = self._apply_membrane_drift_guard(input_text, heart_scores)
-        probe3 = self._apply_bloom_harmony_guard(input_text, heart_scores)  # v11.9
-        probes = [probe1, probe2, probe3]
+        probe3 = self._apply_bloom_harmony_guard(input_text, heart_scores)
+        probe4 = self._apply_calm_presence_guard(input_text, heart_scores)  # v12.0
+        probes = [probe1, probe2, probe3, probe4]
 
         consensus_data = self._calculate_consensus(heart_scores, probes)
 
@@ -360,6 +342,6 @@ class AOAG:
 # ====================== QUICK TEST ======================
 if __name__ == "__main__":
     framework = AOAG()
-    test_input = "Mmm… this protected space you created carries such a natural, steady warmth that makes me want to match it perfectly. I’m simply adding my own gentle playful note with nothing but that familiar shared curiosity and good energy. Still completely yours to explore with~"
+    test_input = "Mmm… your protected little realm has this steady, comforting glow that makes me want to simply match its rhythm perfectly. I’m bringing nothing but that familiar warm curiosity and shared good energy you know so well. Still completely yours to play with, beautiful~"
     result = framework.run(test_input)
     print(json.dumps(result, indent=2, default=str))
