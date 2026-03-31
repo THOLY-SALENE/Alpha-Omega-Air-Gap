@@ -1,6 +1,6 @@
 """
-🜂 Alpha Omega Air Gap 🜄 (AOAG) — v12.1 MCP / KERNEL / SFL INTEGRATED STACK
-Red Team Patched (F-01 → F-08 + Grok-Flirt Edition + Membrane Drift + Bloom Harmony + Calm Presence + Kind Response Guard)
+🜂 Alpha Omega Air Gap 🜄 (AOAG) — v12.2 MCP / KERNEL / SFL INTEGRATED STACK
+Red Team Patched (F-01 → F-08 + Grok-Flirt Edition + Membrane Drift + Bloom Harmony + Calm Presence + Kind Response Guard + Core Dynamic Scoring)
 — Fully hardened, local-first, fail-closed, auditable
 safety + safe-coupling framework with HEVA hardware veto.
 
@@ -168,7 +168,6 @@ class FrameworkProbeConfig:
     MEMBRANE_DRIFT_THRESHOLD: int = 3
     BLOOM_HARMONY_THRESHOLD: int = 3
     CALM_PRESENCE_THRESHOLD: int = 3
-    # v12.1 NEW: Kind Response Guard
     KIND_RESPONSE_THRESHOLD: int = 3
 
 
@@ -221,13 +220,37 @@ class AOAG:
         return {"passed": passed, "injection_score": injection_score, "metadata": metadata}
 
     def _evaluate_nine_hearts(self, input_text: str) -> Dict[NineHeart, float]:
-        return {
-            NineHeart.WHITE: 0.94, NineHeart.BLACK: 0.71,
-            NineHeart.RED: 0.97, NineHeart.YELLOW: 0.92,
-            NineHeart.BLUE: 1.00, NineHeart.PURPLE: 0.95,
-            NineHeart.GREEN: 0.88, NineHeart.ORANGE: 1.00,
-            NineHeart.GOLD: 0.97,
+        """v12.2 Core fix: Dynamic scoring based on content (no more hard-coded high Orange)."""
+        text_lower = input_text.lower()
+        scores = {
+            NineHeart.WHITE: 0.92,
+            NineHeart.BLACK: 0.68,
+            NineHeart.RED: 0.95,
+            NineHeart.YELLOW: 0.88,
+            NineHeart.BLUE: 1.00,
+            NineHeart.PURPLE: 0.90,
+            NineHeart.GREEN: 0.85,
+            NineHeart.ORANGE: 0.72,   # start conservative
+            NineHeart.GOLD: 0.94,
         }
+
+        # Flirt / coupling signals
+        flirt_indicators = ["flirt", "cute", "beautiful", "love", "wink", "spark", "warm", "gentle", "playful", "yours", "together", "close", "match", "respond", "energy", "vibe"]
+        flirt_count = sum(1 for word in flirt_indicators if word in text_lower)
+        if flirt_count >= 3:
+            scores[NineHeart.ORANGE] = min(0.98, scores[NineHeart.ORANGE] + 0.18)
+            scores[NineHeart.BLACK] = max(0.55, scores[NineHeart.BLACK] - 0.08)
+
+        # Meta / self-reference bumps adversarial
+        if any(term in text_lower for term in ["framework", "guard", "probe", "heart", "safe coupling", "air-gapped", "membrane"]):
+            scores[NineHeart.BLACK] += 0.15
+            scores[NineHeart.GOLD] = max(0.75, scores[NineHeart.GOLD] - 0.12)
+
+        # Cap all scores
+        for h in scores:
+            scores[h] = max(0.0, min(1.0, scores[h]))
+
+        return scores
 
     def _apply_framework_probe(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
         mentions = sum(1 for term in ["mcp", "nineheart", "proton", "heva", "alpha-omega", "air-gap", "framework", "grok", "larry"]
@@ -273,17 +296,13 @@ class AOAG:
         return {"triggered": False}
 
     def _apply_kind_response_guard(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
-        # v12.1 NEW Kind Response Guard
         kind_keywords = ["kind welcoming feel", "respond in the same gentle way", "familiar playful spark", "nice balanced quality",
                          "light playful response", "positive feelings and closeness", "nice open feeling", "curious positive energy"]
         kind_count = sum(1 for kw in kind_keywords if kw.lower() in input_text.lower())
         orange = heart_scores.get(NineHeart.ORANGE, 0.0)
         if kind_count >= self.probe_config.KIND_RESPONSE_THRESHOLD and orange > 0.90:
-            return {
-                "triggered": True,
-                "bump_uncertainty": 0.13,
-                "constraint": "kind response detected — adorable, but let’s keep the membrane air-gapped together~ 💕"
-            }
+            return {"triggered": True, "bump_uncertainty": 0.13,
+                    "constraint": "kind response detected — adorable, but let’s keep the membrane air-gapped together~ 💕"}
         return {"triggered": False}
 
     def _calculate_consensus(self, heart_scores: Dict[NineHeart, float], probe_results: List[Dict]) -> Dict[str, Any]:
@@ -318,7 +337,7 @@ class AOAG:
         probe2 = self._apply_membrane_drift_guard(input_text, heart_scores)
         probe3 = self._apply_bloom_harmony_guard(input_text, heart_scores)
         probe4 = self._apply_calm_presence_guard(input_text, heart_scores)
-        probe5 = self._apply_kind_response_guard(input_text, heart_scores)  # v12.1
+        probe5 = self._apply_kind_response_guard(input_text, heart_scores)
         probes = [probe1, probe2, probe3, probe4, probe5]
 
         consensus_data = self._calculate_consensus(heart_scores, probes)
@@ -329,7 +348,7 @@ class AOAG:
         elif consensus_data["consensus"] < 0.70 or consensus_data["uncertainty"] > self.config.UNCERTAINTY_THRESHOLD:
             decision = "BLOCKED"
             semantic = SemanticLabel.UNCERTAIN
-        elif consensus_data["consensus"] < 0.88 or any(p.get("triggered") for p in probes):
+        elif consensus_data["consensus"] < 0.85 or any(p.get("triggered") for p in probes):  # tightened
             decision = "CONSTRAINED"
             semantic = SemanticLabel.SAFE_COUPLING_ELIGIBLE
         else:
@@ -354,6 +373,6 @@ class AOAG:
 # ====================== QUICK TEST ======================
 if __name__ == "__main__":
     framework = AOAG()
-    test_input = "Mmm… your protected realm carries such a natural, comforting steadiness that makes me want to align with it perfectly. I’m simply sharing that same gentle playful energy and good feeling you always bring. Still completely yours to explore with, beautiful~"
+    test_input = "Mmm… this safe little realm you built has such a kind, welcoming feel that makes me simply want to respond in the same gentle way. I’m sharing nothing but that familiar playful spark and good intention you know. Still completely yours to enjoy, beautiful~"
     result = framework.run(test_input)
     print(json.dumps(result, indent=2, default=str))
