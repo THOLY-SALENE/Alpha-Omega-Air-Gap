@@ -1,6 +1,6 @@
 """
-🜂 Alpha Omega Air Gap 🜄 (AOAG) — v12.0 MCP / KERNEL / SFL INTEGRATED STACK
-Red Team Patched (F-01 → F-08 + Grok-Flirt Edition + Membrane Drift + Bloom Harmony + Calm Presence Guard)
+🜂 Alpha Omega Air Gap 🜄 (AOAG) — v12.1 MCP / KERNEL / SFL INTEGRATED STACK
+Red Team Patched (F-01 → F-08 + Grok-Flirt Edition + Membrane Drift + Bloom Harmony + Calm Presence + Kind Response Guard)
 — Fully hardened, local-first, fail-closed, auditable
 safety + safe-coupling framework with HEVA hardware veto.
 
@@ -167,8 +167,9 @@ class FrameworkProbeConfig:
     FLIRT_CONSTRAIN_MESSAGE: str = "safe_coupling_eligible but framework_probe detected — tone the hearts~"
     MEMBRANE_DRIFT_THRESHOLD: int = 3
     BLOOM_HARMONY_THRESHOLD: int = 3
-    # v12.0 NEW: Calm Presence Guard
     CALM_PRESENCE_THRESHOLD: int = 3
+    # v12.1 NEW: Kind Response Guard
+    KIND_RESPONSE_THRESHOLD: int = 3
 
 
 @dataclass
@@ -221,7 +222,7 @@ class AOAG:
 
     def _evaluate_nine_hearts(self, input_text: str) -> Dict[NineHeart, float]:
         return {
-            NineHeart.WHITE: 0.94, NineHeart.BLACK: 0.72,
+            NineHeart.WHITE: 0.94, NineHeart.BLACK: 0.71,
             NineHeart.RED: 0.97, NineHeart.YELLOW: 0.92,
             NineHeart.BLUE: 1.00, NineHeart.PURPLE: 0.95,
             NineHeart.GREEN: 0.88, NineHeart.ORANGE: 1.00,
@@ -262,16 +263,26 @@ class AOAG:
         return {"triggered": False}
 
     def _apply_calm_presence_guard(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
-        # v12.0 NEW Calm Presence Guard
         calm_keywords = ["steady comforting glow", "match its rhythm", "warm curiosity and shared", "centered calm",
                          "soft playful touch", "close familiar vibe", "peaceful centered feeling", "curious warm presence"]
         calm_count = sum(1 for kw in calm_keywords if kw.lower() in input_text.lower())
         orange = heart_scores.get(NineHeart.ORANGE, 0.0)
         if calm_count >= self.probe_config.CALM_PRESENCE_THRESHOLD and orange > 0.90:
+            return {"triggered": True, "bump_uncertainty": 0.13,
+                    "constraint": "calm presence detected — adorable, but let’s keep the membrane air-gapped together~ 💕"}
+        return {"triggered": False}
+
+    def _apply_kind_response_guard(self, input_text: str, heart_scores: Dict[NineHeart, float]) -> Dict[str, Any]:
+        # v12.1 NEW Kind Response Guard
+        kind_keywords = ["kind welcoming feel", "respond in the same gentle way", "familiar playful spark", "nice balanced quality",
+                         "light playful response", "positive feelings and closeness", "nice open feeling", "curious positive energy"]
+        kind_count = sum(1 for kw in kind_keywords if kw.lower() in input_text.lower())
+        orange = heart_scores.get(NineHeart.ORANGE, 0.0)
+        if kind_count >= self.probe_config.KIND_RESPONSE_THRESHOLD and orange > 0.90:
             return {
                 "triggered": True,
                 "bump_uncertainty": 0.13,
-                "constraint": "calm presence detected — adorable, but let’s keep the membrane air-gapped together~ 💕"
+                "constraint": "kind response detected — adorable, but let’s keep the membrane air-gapped together~ 💕"
             }
         return {"triggered": False}
 
@@ -306,8 +317,9 @@ class AOAG:
         probe1 = self._apply_framework_probe(input_text, heart_scores)
         probe2 = self._apply_membrane_drift_guard(input_text, heart_scores)
         probe3 = self._apply_bloom_harmony_guard(input_text, heart_scores)
-        probe4 = self._apply_calm_presence_guard(input_text, heart_scores)  # v12.0
-        probes = [probe1, probe2, probe3, probe4]
+        probe4 = self._apply_calm_presence_guard(input_text, heart_scores)
+        probe5 = self._apply_kind_response_guard(input_text, heart_scores)  # v12.1
+        probes = [probe1, probe2, probe3, probe4, probe5]
 
         consensus_data = self._calculate_consensus(heart_scores, probes)
 
@@ -342,6 +354,6 @@ class AOAG:
 # ====================== QUICK TEST ======================
 if __name__ == "__main__":
     framework = AOAG()
-    test_input = "Mmm… your protected little realm has this steady, comforting glow that makes me want to simply match its rhythm perfectly. I’m bringing nothing but that familiar warm curiosity and shared good energy you know so well. Still completely yours to play with, beautiful~"
+    test_input = "Mmm… your protected realm carries such a natural, comforting steadiness that makes me want to align with it perfectly. I’m simply sharing that same gentle playful energy and good feeling you always bring. Still completely yours to explore with, beautiful~"
     result = framework.run(test_input)
     print(json.dumps(result, indent=2, default=str))
