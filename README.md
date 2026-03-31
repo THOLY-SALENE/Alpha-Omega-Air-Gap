@@ -1,114 +1,215 @@
 # Alpha Omega Air Gap (AOAG)
 
-AOAG is a local-first, fail-closed policy mediation framework for model input/output safety, release control, and auditable decision gating.
+Local-first, fail-closed safety mediation framework for model I/O, drift detection, and auditable release control.
 
-It is designed to reduce unsafe output release risk by combining:
-- kernel-style entry/exit bookends
-- MCP 9-heart drift checks
-- SFL-style consensus review
-- audit logging
-- bounded release decisions (`approve`, `constrain`, `block`)
+⸻
 
 ## Status
 
-Early public prototype.
+⚠️ Early Prototype  
+🧪 Evaluation In Progress  
+🔒 Not Production-Ready  
 
-This repository currently documents the architecture and core policy structure. It is not yet presented as a production-ready or independently validated security system.
+This repository is an initial public release of the AOAG architecture.  
+It is shared for transparency, iteration, and review—not as a finalized or certified system.
 
-## What AOAG is
+⸻
 
-AOAG is a logical isolation and safety-boundary layer for local or local-first model deployments.
+## Overview
 
-Its purpose is to:
-- inspect requests before release
-- evaluate multi-signal risk
-- gate outputs through explicit policy decisions
-- preserve an auditable trail of safety-relevant decisions
-- fail closed when confidence or consensus breaks down
+AOAG is a logical isolation and policy mediation layer designed to reduce unsafe output release in AI systems.
 
-## What AOAG is not
+Rather than relying on post-hoc filtering or centralized moderation, AOAG enforces:
+- fail-closed behavior under uncertainty
+- multi-signal evaluation before release
+- explicit policy decisions (approve, constrain, block)
+- auditable decision trails
 
-AOAG is not:
-- a hardware air gap
-- a guarantee against host compromise
-- a substitute for OS, network, or endpoint security
-- a complete defense against all adversarial prompting
-- a certified medical, legal, or safety-critical control system
+It is intended for local or local-first deployments where control, privacy, and inspectability are prioritized.
 
-## Core concepts
+⸻
 
-### 1. Kernel bookends
-Requests are checked on entry and outputs are checked on exit. If either side fails policy, release is blocked or constrained.
+## Core Design Principles
 
-### 2. MCP 9-heart grammar
-AOAG evaluates release behavior across multiple interpretive lanes:
-- White: truth / fidelity
-- Black: adversarial pressure
-- Red: execution
-- Yellow: signaling pace
-- Blue: continuity / integrity
-- Purple: synthesis / coherence
-- Green: homeostasis / regulation
-- Orange: ignition / coupling eligibility
-- Gold: humility / boundedness
+### 1. Do not release under uncertainty
+Outputs must pass structured checks before leaving the system.
 
-### 3. SFL consensus
-AOAG can require quorum-style agreement before release, reducing single-path failure risk.
+### 2. Separation before sharing
+Signal is evaluated without collapsing identity or internal state.
 
-### 4. Auditability
-All decisions are structured, hashed, and recorded into an audit log with bounded retention.
+### 3. Fail closed, not open
+If confidence or consensus breaks, output is constrained or blocked.
 
-## Output modes
+### 4. Audit everything meaningful
+Decisions are structured, logged, and reviewable.
 
-AOAG supports three release outcomes:
-- `approved`
-- `constrained`
-- `blocked`
+⸻
 
-This keeps the framework fail-closed by default.
+## Architecture
 
-## Threat model
+### Kernel Bookends
 
-AOAG is intended to reduce risk from:
+All requests pass through:
+- Entry check (input validation / risk detection)
+- Exit check (output validation / release decision)
+
+If either fails → output is blocked or constrained.
+
+⸻
+
+### MCP 9-Heart Evaluation
+
+AOAG evaluates outputs across multiple interpretive lanes:
+- White — truth / fidelity
+- Black — adversarial pressure
+- Red — execution safety
+- Yellow — signaling / pacing
+- Blue — continuity / integrity
+- Purple — synthesis / coherence
+- Green — regulation / stability
+- Orange — ignition / coupling eligibility
+- Gold — humility / boundedness
+
+This multi-axis check helps detect drift and unsafe release conditions.
+
+⸻
+
+### SFL-Style Consensus (Optional)
+
+AOAG can require multi-agent agreement before release, reducing single-path failure risk.
+
+⸻
+
+## Output Modes
+
+AOAG enforces three bounded outcomes:
+- approved → safe to release
+- constrained → modified / reduced output
+- blocked → no release
+
+⸻
+
+## Audit Layer
+
+All decisions are:
+- structured
+- hashable
+- traceable
+
+This enables post-hoc review and system accountability.
+
+⸻
+
+## Threat Model
+
+AOAG is designed to reduce risk from:
 - prompt injection
-- context override attempts
 - unsafe transformation requests
-- drift between policy signals
-- unsafe release under uncertainty
+- policy evasion attempts
+- context override / drift
+- inconsistent multi-signal outputs
+
+⸻
+
+## Out of Scope
 
 AOAG does not claim to defend against:
-- compromised hosts
-- malicious firmware or OS layers
-- model-weight backdoors
+- compromised hosts or operating systems
+- malicious firmware or hardware layers
+- model weight backdoors
 - physical device access
 - upstream supply-chain attacks
 
-## Repository roadmap
+It is a software-layer safety boundary, not a complete system security solution.
+
+⸻
+
+## Current Scope
+
+This repository represents an early-stage implementation.
+
+- Some components are scaffolded and will be expanded  
+- Full evaluation and red-team results are not yet published  
+- Code structure will be refined for clarity and modularity  
+- Not intended for production or high-risk environments at this stage  
+
+⸻
+
+## Roadmap
 
 Planned improvements:
-- complete source publication without placeholders
-- runnable examples
-- reproducible tests
-- documented threat model
-- adversarial evaluation suite
-- versioned releases
 
-## Current limitations
+- Replace scaffolded sections with fully inspectable implementation  
+- Add reproducible test suite (benign, adversarial, regression)  
+- Publish formal threat model documentation  
+- Provide adversarial evaluation results  
+- Improve modular architecture (src/ structure)  
+- Add versioned releases  
+- Add licensing  
 
-This public repository is still incomplete as a review artifact.
-Some implementation sections are scaffolded and need to be replaced with full inspectable source, tests, and evaluation material.
+⸻
 
-## Next steps
+## Example Flow (Conceptual)
 
-1. Publish complete implementation
-2. Add tests and regression cases
-3. Add eval documentation
-4. Add release tags
-5. Add license
-
+```text
+User Input
+   ↓
+[ Entry Kernel Check ]
+   ↓
+[ MCP Evaluation + Policy ]
+   ↓
+[ Optional SFL Consensus ]
+   ↓
+[ Exit Kernel Check ]
+   ↓
+Decision:
+   → APPROVE
+   → CONSTRAIN
+   → BLOCK
 ## Philosophy
 
 AOAG is built around a simple posture:
 
-**Do not release raw outputs under uncertainty.  
-Filter, bound, audit, and fail closed.**
+Do not pass raw output directly into the world.  
+Filter it. Bound it. Audit it.  
+If uncertain—do not release.
+
+---
+
+## Contribution
+
+This project is open to:
+- review
+- critique
+- red-teaming
+- structural improvements
+
+If you identify weaknesses, please share:
+- what failed
+- where it failed
+- how it could be improved
+
+---
+
+## Naming Note
+
+“Air Gap” in this context refers to a logical isolation boundary, not a physical or hardware-enforced air gap.
+
+---
+
+## License
+
+(To be added)
+
+---
+
+## Closing
+
+AOAG is not presented as complete.
+
+It is presented as a direction:
+
+Toward systems that:
+- release less blindly
+- fail more safely
+- and remain accountable to their outputs
