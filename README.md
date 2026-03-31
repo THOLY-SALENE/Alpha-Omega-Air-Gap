@@ -1,0 +1,1 @@
+AOAG v11.6 performs as a solid, auditable safety boundary suitable for high-stakes local-first deployments. The MCP 9-heart layer, Proton invariants, and HEVA veto add depth beyond typical guardrails. The framework holds up well under red-team testing.
