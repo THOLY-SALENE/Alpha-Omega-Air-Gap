@@ -28,6 +28,17 @@ Rather than relying on post-hoc filtering or centralized moderation, AOAG enforc
 
 It is intended for local or local-first deployments where control, privacy, and inspectability are prioritized.
 
+What This System Does NOT Do
+- does not decode reality
+- does not influence external events
+- does not replace real-world feedback
+- does not grant special insight into hidden systems
+
+What This System IS
+- a fail-closed cognitive safety layer
+- a regulator for interpretation
+- a boundary between signal and identity
+
 ---
 
 ## Core Design Principles
